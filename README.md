@@ -1,5 +1,5 @@
 # Simple-CSGO-Cheat
-Requirement: pip install pymem, pip install pynput
+Requirements: pip install pymem, pip install pynput
 
 End: Close the program\
 F1: Wallhack (Default: Enable)\
