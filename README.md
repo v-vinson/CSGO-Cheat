@@ -6,7 +6,7 @@ F1: Wallhack (Default: Enable)\
 F2: Trigger (Default: Disable)\
 F3: Aimbot (Default: Disable)\
 Hold Mouse3: Trigger (Default: Enable)\
-Hold Mouse4: Aimbot (Default: Enable)\
+Hold Mouse4: Aimbot (Default: Enable)
 
 End: 结束程序\
 F1：切换透视\
