@@ -15,9 +15,8 @@ config = {
 
     'keyboard_hotkey': {
         'exit': keyboard.Key.end,
-        'glow': keyboard.Key.f1,
-        'trigger': keyboard.Key.f2,
-        'aimbot': keyboard.Key.f3
+        'trigger': None,
+        'aimbot': keyboard.Key.alt_l
     },
 
     'function': {
@@ -27,9 +26,10 @@ config = {
         'aimbot': False
     },
 
-    'aimbot_fov': 10,
+    'aimbot_fov': 20,
     'aimbot_head': True,
-    'aimbot_friendly': False
+    'aimbot_friendly': False,
+    'aimbot_auto_fire': True
 }
 
 
@@ -51,7 +51,13 @@ def mouse_on_click(x, y, button, pressed):
 def keyboard_on_press(key):
     for k, v in config['keyboard_hotkey'].items():
         if key == v:
-            switch_function(k)
+            config['function'][k] = True
+
+
+def keyboard_on_release(key):
+    for k, v in config['keyboard_hotkey'].items():
+        if key == v:
+            config['function'][k] = False
 
 
 def register_hotkey():
@@ -59,7 +65,8 @@ def register_hotkey():
         on_click=mouse_on_click
     ).start()
     keyboard.Listener(
-        on_press=keyboard_on_press
+        on_press=keyboard_on_press,
+        on_release=keyboard_on_release
     ).start()
 
 
@@ -84,7 +91,8 @@ def main():
                     cheat.trigger()
 
                 if config['function']['aimbot']:
-                    cheat.aimbot(config['aimbot_fov'], config['aimbot_head'], config['aimbot_friendly'], config['aimbot_visible'])
+                    cheat.aimbot(config['aimbot_fov'], config['aimbot_head'], config['aimbot_auto_fire'], config['aimbot_friendly'])
+
             except Exception as e:
                 print(f'[Error] {e}')
 

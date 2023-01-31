@@ -7,6 +7,7 @@ import time
 T_TEAM_NUM = 2
 CT_TEAM_NUM = 3
 
+
 class Cheat:
     @staticmethod
     def is_valid_team_num(team_num):
@@ -168,6 +169,15 @@ class Cheat:
         pos_z = self.pm.read_float(p_id + vo + 0x8) + self.get_player_angle_z()
         return pos_x, pos_y, pos_z
 
+    def get_player_shots_fired(self):
+        return self.pm.read_uint(self.get_player_id() + self.offset['netvars']['m_iShotsFired'])
+
+    def get_player_punch_angles(self):
+        p_id = self.get_player_id()
+        punch_x = self.pm.read_float(p_id + self.offset['netvars']['m_aimPunchAngle'])
+        punch_y = self.pm.read_float(p_id + self.offset['netvars']['m_aimPunchAngle'] + 0x4)
+        return punch_x, punch_y
+
     def get_entity_id(self, index):
         return self.pm.read_uint(self.client + self.offset['signatures']['dwEntityList'] + index * 0x10)
 
@@ -285,7 +295,7 @@ class Cheat:
                 self.force_attack()
                 time.sleep(0.1)
 
-    def aimbot(self, fov, head=True, friendly=False, visible=False):
+    def aimbot(self, fov, head=True, auto_fire=False, friendly=False, visible=False):
         target = self.get_best_target(fov, friendly, visible)
 
         if target:
@@ -293,5 +303,13 @@ class Cheat:
             t_pos = self.get_entity_pos(target, head)
 
             angles = self.calc_angle(*p_pos, *t_pos)
-            n_angles = self.normalize_angles(*angles)
-            self.force_view_angles(*n_angles)
+            angle_x, angle_y = self.normalize_angles(*angles)
+
+            punch_x, punch_y = self.get_player_punch_angles()
+            self.force_view_angles(angle_x - 2 * punch_x, angle_y - 2 * punch_y)
+
+            if auto_fire:
+                crosshair_id = self.get_player_crosshair_id()
+                e_id = self.get_entity_id_from_crosshair_id(crosshair_id)
+                if self.get_player_shots_fired() <= 1 and 0 < crosshair_id < 64 and target == e_id:
+                    self.force_attack()
