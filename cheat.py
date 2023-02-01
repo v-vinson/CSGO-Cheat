@@ -44,16 +44,20 @@ class Cheat:
         return r, g, b
 
     @staticmethod
+    def normalize_angle_y(angle_y):
+        if angle_y > 180:
+            angle_y -= 360
+        elif angle_y < -180:
+            angle_y += 360
+        return angle_y
+
+    @staticmethod
     def normalize_angles(angle_x, angle_y):
         if angle_x > 89:
             angle_x -= 360
         elif angle_x < -89:
             angle_x += 360
-        if angle_y > 180:
-            angle_y -= 360
-        elif angle_y < -180:
-            angle_y += 360
-        return angle_x, angle_y
+        return angle_x, Cheat.normalize_angle_y(angle_y)
 
     @staticmethod
     def normalize_distances(d_x, d_y):
@@ -74,6 +78,22 @@ class Cheat:
     @staticmethod
     def lerp(a, b, t):
         return a + (b - a) * t
+
+    @staticmethod
+    def normalize_lerp(old_x, old_y, new_x, new_y, t):
+        x = Cheat.lerp(old_x, new_x, t)
+        if abs(new_y - old_y) < 180:
+            y = Cheat.lerp(old_y, new_y, t)
+        else:
+            if new_y > old_y:
+                old_y += 360
+            else:
+                new_y += 360
+
+            y = Cheat.lerp(old_y, new_y, t)
+            y = Cheat.normalize_angle_y(y)
+
+        return x, y
 
     @staticmethod
     def calc_distance(old_x, old_y, new_x, new_y):
@@ -307,8 +327,7 @@ class Cheat:
             new_x, new_y = angle_x - 2 * punch_x, angle_y - 2 * punch_y
             old_x, old_y = self.get_player_view_angles()
 
-            new_x = self.lerp(old_x, new_x, 1 - smooth)
-            new_y = self.lerp(old_y, new_y, 1 - smooth)
+            new_x, new_y = self.normalize_lerp(old_x, old_y, new_x, new_y, 1 - smooth)
 
             self.force_view_angles(new_x, new_y)
 

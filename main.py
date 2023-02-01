@@ -16,7 +16,7 @@ config = {
 
     'keyboard_hotkey': {
         'exit': keyboard.Key.end,
-        'trigger': 'c',
+        'trigger': None,
         'aimbot': keyboard.Key.alt_l
     },
 
@@ -28,14 +28,29 @@ config = {
     },
 
     'aimbot': {
+        # 自瞄范围
         'fov': 20,
+
+        # 锁头/锁身
         'lock_head': True,
+
+        # 锁头率
         'lock_head_rate': 0.5,
+
+        # 随机锁头锁身
         'lock_randomly': False,
+
+        # 自动开枪
         'auto_fire': True,
+
+        # 锁友军
         'friendly': False,
+
+        # 仅锁可见
         'visible': False,
-        'smooth': 0.8
+
+        # 平滑度（0~1，越大越平滑）
+        'smooth': 0.7
     }
 }
 
@@ -47,7 +62,6 @@ def load_offset():
 
 def switch_function(name):
     config['function'][name] = not config['function'][name]
-
 
     if name == 'aimbot' and config['aimbot']['lock_randomly']:
         config['aimbot']['lock_head'] = random.random() < config['aimbot']['lock_head_rate']
@@ -109,7 +123,7 @@ def main():
         if config['function']['exit']:
             sys.exit(0)
 
-        time.sleep(0.005)
+        time.sleep(0.0025)
 
         if cheat.is_gaming():
             try:
