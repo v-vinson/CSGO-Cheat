@@ -72,6 +72,10 @@ class Cheat:
         return True
 
     @staticmethod
+    def lerp(a, b, t):
+        return a + (b - a) * t
+
+    @staticmethod
     def calc_distance(old_x, old_y, new_x, new_y):
         d_x, d_y = Cheat.normalize_distances(new_x - old_x, new_y - old_y)
         return math.sqrt(d_x ** 2 + d_y ** 2)
@@ -141,23 +145,17 @@ class Cheat:
     def get_player_crosshair_id(self):
         return self.pm.read_uint(self.get_player_id() + self.offset['netvars']['m_iCrosshairId'])
 
-    def get_player_angle_x(self):
-        return self.pm.read_float(self.get_engine_pointer() + self.__get_view_angles())
-
-    def get_player_angle_y(self):
-        return self.pm.read_float(self.get_engine_pointer() + self.__get_view_angles() + 0x4)
-
-    def get_player_angle_z(self):
+    def get_player_view_angle_z(self):
         return self.pm.read_float(self.get_player_id() + self.offset['netvars']['m_vecViewOffset'] + 0x8)
 
-    def get_player_angles(self):
+    def get_player_view_angles(self):
         p_engine = self.get_engine_pointer()
         angle_x = self.pm.read_float(p_engine + self.__get_view_angles())
         angle_y = self.pm.read_float(p_engine + self.__get_view_angles() + 0x4)
         return angle_x, angle_y
 
-    def get_player_all_angles(self):
-        angle_x, angle_y = self.get_player_angles()
+    def get_player_all_view_angles(self):
+        angle_x, angle_y = self.get_player_view_angles()
         angle_z = self.pm.read_float(self.get_player_id() + self.offset['netvars']['m_vecViewOffset'] + 0x8)
         return angle_x, angle_y, angle_z
 
@@ -166,7 +164,7 @@ class Cheat:
         vo = self.offset['netvars']['m_vecOrigin']
         pos_x = self.pm.read_float(p_id + vo)
         pos_y = self.pm.read_float(p_id + vo + 0x4)
-        pos_z = self.pm.read_float(p_id + vo + 0x8) + self.get_player_angle_z()
+        pos_z = self.pm.read_float(p_id + vo + 0x8) + self.get_player_view_angle_z()
         return pos_x, pos_y, pos_z
 
     def get_player_shots_fired(self):
@@ -223,7 +221,7 @@ class Cheat:
                 e_dormant = self.get_entity_dormant(e_id)
 
                 if (p_team != e_team or friendly) and e_hp > 0 and not e_dormant:
-                    p_angles = self.get_player_angles()
+                    p_angles = self.get_player_view_angles()
                     p_pos = self.get_player_pos()
                     e_pos = self.get_entity_pos(e_id)
 
@@ -295,7 +293,7 @@ class Cheat:
                 self.force_attack()
                 time.sleep(0.1)
 
-    def aimbot(self, fov, head=True, auto_fire=False, friendly=False, visible=False):
+    def aimbot(self, fov, head=True, auto_fire=False, friendly=False, visible=False, smooth=0.0):
         target = self.get_best_target(fov, friendly, visible)
 
         if target:
@@ -306,7 +304,13 @@ class Cheat:
             angle_x, angle_y = self.normalize_angles(*angles)
 
             punch_x, punch_y = self.get_player_punch_angles()
-            self.force_view_angles(angle_x - 2 * punch_x, angle_y - 2 * punch_y)
+            new_x, new_y = angle_x - 2 * punch_x, angle_y - 2 * punch_y
+            old_x, old_y = self.get_player_view_angles()
+
+            new_x = self.lerp(old_x, new_x, 1 - smooth)
+            new_y = self.lerp(old_y, new_y, 1 - smooth)
+
+            self.force_view_angles(new_x, new_y)
 
             if auto_fire:
                 crosshair_id = self.get_player_crosshair_id()
